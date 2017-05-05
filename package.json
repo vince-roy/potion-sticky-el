@@ -1,0 +1,17 @@
+{
+  "name": "potion-vanilla-sticky-el",
+  "version": "1.0.0",
+  "description": "A modern vanilla sticky element script",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascript",
+    "sticky",
+    "vanilla",
+    "element"
+  ],
+  "author": "Vince Roy",
+  "license": "ISC"
+}
