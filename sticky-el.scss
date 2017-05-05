@@ -1,0 +1,8 @@
+@mixin sticky-el() {
+  position: absolute;
+  transition: top 0.1s ease;
+  transform: translateZ(0); // any 3d transform to trigger hardware acceleration
+    &.-stuck {
+    transition: none;
+  }
+}	
