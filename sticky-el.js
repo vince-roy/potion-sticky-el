@@ -32,8 +32,7 @@ export default ($el, $end_el, opts) => ({
     if (!$el || !$end_el) return
     Object.assign(this, {
       $el,
-      $end_el,
-      $offset_parent: $el.offsetParent
+      $end_el
     })
     Object.assign(this.config.spacing, opts.spacing)
     this.config.mq = opts.mq || this.config.mq
@@ -89,26 +88,36 @@ export default ($el, $end_el, opts) => ({
   init () {
     if (!this.$el || !this.$end_el) return
     if (!window.matchMedia(this.config.mq).matches) {
-      return this.disable();
+      return this.disable()
     }
     this.elReset()
-    let el_bounds = this.bounds(this.$el)
-    let el_parent_bounds = this.bounds(this.$offset_parent)
-    Object.assign(this, {
-      height: el_bounds.height
-    })
-    this.config.original = {
-      left: el_bounds.left - el_parent_bounds.left,
-      top: el_bounds.top - el_parent_bounds.top
-    }
     window.removeEventListener('o-scroll', this.onScrollBound, false)
     window.addEventListener('o-scroll', this.onScrollBound, false)
     // trigger once on page load, on resize or on ad load
     this.onScroll()
   },
+  initOffsetParentAndOriginalPosition (el_bounds, offset_parent_bounds) {
+    this.$offset_parent = this.$el.offsetParent
+    this.height = el_bounds.height
+    this.config.original = {
+      left: el_bounds.left - offset_parent_bounds.left,
+      top: el_bounds.top - offset_parent_bounds.top
+    }
+    return el_bounds
+  },
   onScroll () {
-    let el_bounds = this.bounds(this.$el)
-    let offset_parent_bounds = this.bounds(this.$offset_parent)
+    let $offset_parent = this.$el.offsetParent || this.$offset_parent
+    let el_bounds
+    let offset_parent_bounds
+    if (!$offset_parent) {
+      return
+    } else {
+      el_bounds = this.bounds(this.$el)
+      offset_parent_bounds = this.bounds($offset_parent)
+      if (!this.config.original && $offset_parent) {
+        this.initOffsetParentAndOriginalPosition(el_bounds, offset_parent_bounds)
+      }
+    }
     let end_el_bounds = this.bounds(this.$end_el)
     let delta_original_y =
       offset_parent_bounds.top +
