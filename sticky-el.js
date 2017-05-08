@@ -56,6 +56,7 @@ export default ($el, $wrap_el, opts) => ({
     this.last_state = 'fixed'
     this.applyStyles({
       bottom: '',
+      left: this.config.original.left + 'px',
       position: 'fixed',
       top: this.config.spacing.top + 'px'
     })
@@ -90,14 +91,17 @@ export default ($el, $wrap_el, opts) => ({
       return this.disable()
     }
     this.elReset()
+    this.initOffsetParentAndOriginalPosition()
     window.removeEventListener('o-scroll', this.onScrollBound, false)
     window.addEventListener('o-scroll', this.onScrollBound, false)
     // trigger once on page load, on resize or on ad load
     this.onScroll()
   },
   initOffsetParentAndOriginalPosition (el_bounds, wrap_bounds) {
+    el_bounds = el_bounds || this.bounds(this.$el)
+    wrap_bounds = wrap_bounds || this.bounds(this.$wrap_el)
     this.config.original = {
-      left: el_bounds.left - wrap_bounds.left,
+      left: el_bounds.left,
       top: el_bounds.top - wrap_bounds.top
     }
     return el_bounds
@@ -105,11 +109,8 @@ export default ($el, $wrap_el, opts) => ({
   onScroll () {
     let el_bounds = this.bounds(this.$el)
     let wrap_bounds = this.bounds(this.$wrap_el)
-    if (!this.config.original) {
-      this.initOffsetParentAndOriginalPosition(el_bounds, wrap_bounds)
-    }
     if (
-      wrap_bounds.top - this.config.original.top - this.config.spacing.top <= 0 &&
+      wrap_bounds.top + this.config.original.top - this.config.spacing.top <= 0 &&
       wrap_bounds.bottom > this.config.spacing.top + this.config.spacing.bottom + el_bounds.height
     ) {
       this.elFix(wrap_bounds, el_bounds)
@@ -117,6 +118,7 @@ export default ($el, $wrap_el, opts) => ({
       this.elLeaveBehind(wrap_bounds)
     } else {
       this.elReset()
+      this.config.original.left = el_bounds.left
     }
   },
   pageScroll () {

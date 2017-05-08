@@ -1,3 +1,4 @@
+import optimizeEvent from './optimizeEvent'
 import StickyEl from './sticky-el'
 
 /**
@@ -11,5 +12,11 @@ import StickyEl from './sticky-el'
 export default ({wrapper, el}, opts) => {
   let $el = document.querySelector(el)
   let $wrap_el = document.querySelector(wrapper)
+  if (!"o-resize" in window) {
+    optimizeEvent('resize', 'o-resize', window);
+  }
+  if (!"o-scroll" in window) {
+	  optimizeEvent('scroll', 'o-scroll', window);
+  }
   return StickyEl($el, $wrap_el, opts).create()
 }
