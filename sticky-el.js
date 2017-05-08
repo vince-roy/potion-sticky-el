@@ -1,4 +1,4 @@
-export default ($el, $end_el, opts) => ({
+export default ($el, $wrap_el, opts) => ({
   applyStyles (styles) {
     Object.keys(styles).forEach(s => {
       this.$el.style[s] = styles[s]
@@ -29,10 +29,10 @@ export default ($el, $end_el, opts) => ({
     Create instance of the plugin
   */
   create () {
-    if (!$el || !$end_el) return
+    if (!$el || !$wrap_el) return
     Object.assign(this, {
       $el,
-      $end_el
+      $wrap_el
     })
     Object.assign(this.config.spacing, opts.spacing)
     this.config.mq = opts.mq || this.config.mq
@@ -51,12 +51,12 @@ export default ($el, $end_el, opts) => ({
   /**
    * Set element position to fixed state on page
    */
-  elFix (offset_parent_bounds) {
+  elFix (wrap_bounds) {
     if (this.last_state === 'fixed') return
     this.last_state = 'fixed'
     this.applyStyles({
+      bottom: '',
       position: 'fixed',
-      left: offset_parent_bounds.left + this.config.original.left + 'px',
       top: this.config.spacing.top + 'px'
     })
     .classList.add('-stuck')
@@ -67,8 +67,7 @@ export default ($el, $end_el, opts) => ({
   elLeaveBehind (offset_parent_top, end_el_top, el_height) {
     if (this.last_state === 'abs') return
     this.last_state = 'abs'
-    let top = end_el_top - el_height - offset_parent_top - this.config.spacing.bottom
-    this.applyStyles({left: '', position: 'absolute', top: top + 'px'})
+    this.applyStyles({left: '', position: 'absolute', bottom: this.config.spacing.bottom + 'px', top: 'auto'})
     .classList.add('-stuck')
   },
   /*
@@ -78,7 +77,7 @@ export default ($el, $end_el, opts) => ({
     if (this.last_state === null) return
     this.last_state = null
     this
-    .applyStyles({left: '', position: '', top: ''})
+    .applyStyles({bottom: '', left: '', position: '', top: ''})
     .classList.remove('-stuck')
   },
   /*
@@ -86,7 +85,7 @@ export default ($el, $end_el, opts) => ({
     trigger scroll
   */
   init () {
-    if (!this.$el || !this.$end_el) return
+    if (!this.$el || !this.$wrap_el) return
     if (!window.matchMedia(this.config.mq).matches) {
       return this.disable()
     }
@@ -96,40 +95,26 @@ export default ($el, $end_el, opts) => ({
     // trigger once on page load, on resize or on ad load
     this.onScroll()
   },
-  initOffsetParentAndOriginalPosition (el_bounds, offset_parent_bounds) {
-    this.$offset_parent = this.$el.offsetParent
-    this.height = el_bounds.height
+  initOffsetParentAndOriginalPosition (el_bounds, wrap_bounds) {
     this.config.original = {
-      left: el_bounds.left - offset_parent_bounds.left,
-      top: el_bounds.top - offset_parent_bounds.top
+      left: el_bounds.left - wrap_bounds.left,
+      top: el_bounds.top - wrap_bounds.top
     }
     return el_bounds
   },
   onScroll () {
-    let $offset_parent = this.$el.offsetParent || this.$offset_parent
-    let el_bounds
-    let offset_parent_bounds
-    if (!$offset_parent) {
-      return
-    } else {
-      el_bounds = this.bounds(this.$el)
-      offset_parent_bounds = this.bounds($offset_parent)
-      if (!this.config.original && $offset_parent) {
-        this.initOffsetParentAndOriginalPosition(el_bounds, offset_parent_bounds)
-      }
+    let el_bounds = this.bounds(this.$el)
+    let wrap_bounds = this.bounds(this.$wrap_el)
+    if (!this.config.original) {
+      this.initOffsetParentAndOriginalPosition(el_bounds, wrap_bounds)
     }
-    let end_el_bounds = this.bounds(this.$end_el)
-    let delta_original_y =
-      offset_parent_bounds.top +
-      this.config.original.top
-    let bottom_edge = el_bounds.height + this.config.spacing.top - this.config.spacing.bottom
     if (
-      delta_original_y - this.config.spacing.top < 0 &&
-      end_el_bounds.top >= bottom_edge
+      wrap_bounds.top - this.config.original.top - this.config.spacing.top <= 0 &&
+      wrap_bounds.bottom > this.config.spacing.top + this.config.spacing.bottom + el_bounds.height
     ) {
-      this.elFix(offset_parent_bounds, el_bounds)
-    } else if (end_el_bounds.top < bottom_edge) {
-      this.elLeaveBehind(offset_parent_bounds.top, end_el_bounds.top, el_bounds.height)
+      this.elFix(wrap_bounds, el_bounds)
+    } else if (wrap_bounds.bottom <= this.config.spacing.top + this.config.spacing.bottom + el_bounds.height) {
+      this.elLeaveBehind(wrap_bounds)
     } else {
       this.elReset()
     }
