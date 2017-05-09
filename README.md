@@ -6,9 +6,10 @@ A Modern Vanilla Sticky Element
   import StickyEl from 'potion-sticky-el'
 
   const ad_sticky = 
-    StickyEl(
-      '.js-sticky-el', 
-      '.js-sticky-end', 
+    StickyEl({
+      el: '.js-sticky-el', 
+      wrapper: '.js-sticky-wrap', 
+      },
       {
         mq: '(min-width: 768px)', // optional mq that defaults to (min-width: 768px)
         spacing: {
