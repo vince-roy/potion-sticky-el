@@ -1,6 +1,6 @@
 {
   "name": "potion-sticky-el",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "A modern vanilla sticky element script",
   "main": "index.js",
   "scripts": {
