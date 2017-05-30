@@ -87,6 +87,7 @@ export default ($el, $wrap_el, opts) => ({
   */
   init () {
     if (!this.$el || !this.$wrap_el) return
+    console.log(this.config.mq)
     if (!window.matchMedia(this.config.mq).matches) {
       return this.disable()
     }
